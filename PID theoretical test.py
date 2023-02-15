@@ -4,15 +4,17 @@ import random
 Lcurrent = 10
 Rcurrent = 10
 
-LcurrentOffset = 0
-RcurrentOffset = 0.5
+LcurrentOffset = 0.5
+RcurrentOffset = 0
 LcurrentError = 0
 RcurrentError = 0
 LcurrentErrorMax = 2
 RcurrentErrorMax = 2
 
-Llag = 0.9
-Rlag = 0.9
+LaccelerationLag = 0.9
+RaccelerationLag = 0.9
+LdeccelerationLag = 0.3
+RdeccelerationLag = 0.3
 
 Lvelocity = 0
 Rvelocity = 0
@@ -29,8 +31,8 @@ cumulativeError = 0
 previousCumulativeError = 0
 LsensorError = 0
 RsensorError = 0
-LsensorErrorMax = 2
-RsensorErrorMax = 2
+LsensorErrorMax = 1
+RsensorErrorMax = 1
 
 target = 600
 
@@ -66,10 +68,20 @@ while Lsensor < target or Rsensor < target:
     LsensorError = random.randint(0, LcurrentErrorMax)-(LcurrentErrorMax/2)
     RsensorError = random.randint(0, RcurrentErrorMax)-(RcurrentErrorMax/2)
 
-    Rcurrent = Lcurrent + ((Lsensor - Rsensor) * Kp) + (cumulativeError * Ki) + (Kd)
+    Rcurrent = Lcurrent + (displacementError * Kp) + (cumulativeError * Ki) + (Kd)
 
-    Lvelocity = ((Lvelocity-(Lcurrent+LcurrentError+LcurrentOffset))*Llag)+(Lcurrent+LcurrentError+LcurrentOffset)
-    Rvelocity = ((Rvelocity-(Rcurrent+RcurrentError+RcurrentOffset))*Rlag)+(Rcurrent+RcurrentError+RcurrentOffset)
+    if Lcurrent > Lvelocity:
+        Lvelocity = ((Lvelocity-(Lcurrent+LcurrentError+LcurrentOffset))*LaccelerationLag)+(Lcurrent+LcurrentError+LcurrentOffset)
+    else:
+        Lvelocity = ((Lvelocity-(Lcurrent+LcurrentError+LcurrentOffset))*LdeccelerationLag)+(Lcurrent+LcurrentError+LcurrentOffset)
+        
+    if Rcurrent > Rvelocity:
+        Rvelocity = ((Rvelocity-(Rcurrent+RcurrentError+RcurrentOffset))*RaccelerationLag)+(Rcurrent+RcurrentError+RcurrentOffset)
+    else:
+        Rvelocity = ((Rvelocity-(Rcurrent+RcurrentError+RcurrentOffset))*RdeccelerationLag)+(Rcurrent+RcurrentError+RcurrentOffset)
+
+    print("\nLV: "+str(Lvelocity))
+    print("RV: "+str(Rvelocity))
     
     Lsensor += Lvelocity + LsensorError
     Rsensor += Rvelocity + RsensorError
